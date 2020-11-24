@@ -1,20 +1,83 @@
-// ConFPS.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
-
 #include <iostream>
+using namespace std;
+
+#include <Windows.h>
+
+int nScreenWidth = 120;
+int nScreenHeight = 40;
+
+float fPlayerX = 0.0f;
+float fPlayerY = 0.0f;
+float fPlayerA = 0.0f;
+
+int nMapHeight = 16;
+int nMapWidth = 16;
+
+float fFOV = 3.14159 / 4.0;
+float fDepth = 16.0;
 
 int main()
 {
-    std::cout << "Hello World!\n";
+	// create screen buffer
+	wchar_t* screen = new wchar_t[nScreenHeight * nScreenWidth];
+	HANDLE hConsole = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0,
+		NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
+	SetConsoleActiveScreenBuffer(hConsole);
+	DWORD dwBytesWritten = 0;
+
+	wstring map;
+
+	map += L"###############";
+	map += L"#.............#";
+	map += L"#.............#";
+	map += L"#.............#";
+	map += L"#.............#";
+	map += L"#.............#";
+	map += L"#.............#";
+	map += L"#.............#";
+	map += L"#.............#";
+	map += L"#.............#";
+	map += L"#.............#";
+	map += L"#.............#";
+	map += L"#.............#";
+	map += L"#.............#";
+	map += L"#.............#";
+	map += L"###############";
+
+	// game loop
+	while (1)
+	{
+		for (int x = 0; x < nScreenWidth; x++)
+		{
+			//for each column, calculate the projected ray angle into world space
+			float fRayAngle = (fPlayerA - fFOV / 2.0f) + ((float)x / (float)nScreenWidth * fFOV);
+
+			float fDistanceToWall = 0;
+			bool bHitWall = false;
+
+			float fEyeX = sinf(fRayAngle); // unit vector for ray in player space
+			float fEyeY = cosf(fRayAngle);
+
+			while (!bHitWall && fDistanceToWall < fDepth)
+			{
+				fDistanceToWall += 0.1f;
+
+				int nTestX = (int)(fPlayerX + fEyeX * fDistanceToWall);
+				int nTestY = (int)(fPlayerY + fEyeY * fDistanceToWall);
+
+				// test if ray is out of bounds
+				if (nTestX < 0 || nTestX >= nMapWidth || nTestY < 0 || nTestY >= nMapHeight) 
+				{
+
+				}
+			}
+		}
+
+		// when to stop writing
+		screen[nScreenHeight * nScreenWidth - 1] = '\0';
+		// handle, buffer, how many bytes, coordinates (always write at top left)
+		WriteConsoleOutputCharacter(hConsole, screen, nScreenWidth * nScreenHeight, { 0, 0 }, &dwBytesWritten);
+	}
+
+	return 0;
 }
-
-// Run program: Ctrl + F5 or Debug > Start Without Debugging menu
-// Debug program: F5 or Debug > Start Debugging menu
-
-// Tips for Getting Started: 
-//   1. Use the Solution Explorer window to add/manage files
-//   2. Use the Team Explorer window to connect to source control
-//   3. Use the Output window to see build output and other messages
-//   4. Use the Error List window to view errors
-//   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
-//   6. In the future, to open this project again, go to File > Open > Project and select the .sln file
